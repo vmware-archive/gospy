@@ -25,7 +25,7 @@ func (self *GoSpy) Reset() {
 	self.Calls = nil
 }
 
-func (self *GoSpy) StoreCall(arguments []reflect.Value) {
+func (self *GoSpy) storeCall(arguments []reflect.Value) {
 	self.Called = true;
 
 	var call ParamList
@@ -71,7 +71,7 @@ func SpyAndFakeWithFunc(targetFuncVar interface{}, mockFunc interface{}) *GoSpy 
 func (self *GoSpy) setTargetFn(fn func(args []reflect.Value) []reflect.Value) {
 	targetType := self.mock.GetTarget().Type()
 	wrapperFn := func(args []reflect.Value) []reflect.Value {
-		self.StoreCall(args)
+		self.storeCall(args)
 		return reflect.MakeFunc(targetType, fn).Call(args)
 	}
 
