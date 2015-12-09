@@ -6,9 +6,9 @@ import (
 	"fmt"
 )
 
-type ParamList []interface{}
+type ArgList []interface{}
 
-type CallList []ParamList
+type CallList []ArgList
 
 type GoSpy struct {
 	Called  bool
@@ -28,7 +28,7 @@ func (self *GoSpy) Reset() {
 func (self *GoSpy) storeCall(arguments []reflect.Value) {
 	self.Called = true;
 
-	var call ParamList
+	var call ArgList
 	for _, arg := range arguments {
 		call = append(call, arg.Interface())
 	}
