@@ -9,5 +9,5 @@ import (
 
 func TestGoSpy(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Go Spy Suite")
+	RunSpecs(t, "GoSpy Test Suite")
 }
