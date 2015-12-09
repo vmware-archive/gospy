@@ -55,6 +55,12 @@ var _ = Describe("GoSpy", func() {
 				It("should have returned a valid *GoSpy object", func() {
 				    Expect(subject).NotTo(BeNil())
 				})
+
+				It("should not affect the function's behaviour", func() {
+					stringResult, floatResult := functionToSpy("something", 10, false)
+					Expect(stringResult).To(Equal(kOriginalStringReturn))
+					Expect(floatResult).To(Equal(kOriginalFloatReturn))
+				})
 	        })
 	    })
 	})
