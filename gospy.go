@@ -11,9 +11,8 @@ type ArgList []interface{}
 type CallList []ArgList
 
 type GoSpy struct {
-	Called  bool
-	Calls   CallList
-	mock   *gmock.GMock
+	calls CallList
+	mock  *gmock.GMock
 }
 
 func (self *GoSpy) Restore() {
@@ -21,19 +20,23 @@ func (self *GoSpy) Restore() {
 }
 
 func (self *GoSpy) Reset() {
-	self.Called = false
-	self.Calls = nil
+	self.calls = nil
 }
 
-func (self *GoSpy) storeCall(arguments []reflect.Value) {
-	self.Called = true;
+func (self *GoSpy) CallCount() int {
+	return len(self.calls)
+}
 
-	var call ArgList
-	for _, arg := range arguments {
-		call = append(call, arg.Interface())
-	}
+func (self *GoSpy) Called() bool {
+	return self.CallCount() > 0
+}
 
-	self.Calls = append(self.Calls, call)
+func (self *GoSpy) Calls() CallList {
+	return self.calls
+}
+
+func (self *GoSpy) ArgsForCall(callIndex uint) ArgList {
+	return self.calls[callIndex]
 }
 
 func Spy(targetFuncVar interface{}) *GoSpy {
@@ -68,6 +71,23 @@ func SpyAndFakeWithFunc(targetFuncVar interface{}, mockFunc interface{}) *GoSpy 
 	return spy
 }
 
+func createSpy(targetFuncPtr interface{}) *GoSpy {
+	if !targetIsValid(targetFuncPtr) {
+		panic("Spy target has to be the pointer to a Func variable")
+	}
+
+	spy := &GoSpy{calls: nil, mock: gmock.CreateMockWithTarget(targetFuncPtr)}
+
+	return spy
+}
+
+func targetIsValid(target interface{}) bool {
+	// Target has to be a ptr to a function
+	targetValue := reflect.ValueOf(target)
+	return targetValue.Kind() == reflect.Ptr &&
+	targetValue.Elem().Kind() == reflect.Func
+}
+
 func (self *GoSpy) setTargetFn(fn func(args []reflect.Value) []reflect.Value) {
 	targetType := self.mock.GetTarget().Type()
 	wrapperFn := func(args []reflect.Value) []reflect.Value {
@@ -77,6 +97,15 @@ func (self *GoSpy) setTargetFn(fn func(args []reflect.Value) []reflect.Value) {
 
 	targetFn := reflect.MakeFunc(targetType, wrapperFn)
 	self.mock.Replace(targetFn.Interface())
+}
+
+func (self *GoSpy) storeCall(arguments []reflect.Value) {
+	var call ArgList
+	for _, arg := range arguments {
+		call = append(call, arg.Interface())
+	}
+
+	self.calls = append(self.calls, call)
 }
 
 func (self *GoSpy) getDefaultFn() (func(args []reflect.Value) []reflect.Value) {
@@ -119,21 +148,4 @@ func (self *GoSpy) getFnWithMockFunc(mockFunc interface{}) (func(args []reflect.
 	}
 
 	return mockFuncValue.Call
-}
-
-func createSpy(targetFuncPtr interface{}) *GoSpy {
-	if !targetIsValid(targetFuncPtr) {
-		panic("Spy target has to be the pointer to a Func variable")
-	}
-
-	spy := &GoSpy{Called: false, Calls: nil, mock: gmock.CreateMockWithTarget(targetFuncPtr)}
-
-	return spy
-}
-
-func targetIsValid(target interface{}) bool {
-	// Target has to be a ptr to a function
-	targetValue := reflect.ValueOf(target)
-	return targetValue.Kind() == reflect.Ptr &&
-		   targetValue.Elem().Kind() == reflect.Func
 }
