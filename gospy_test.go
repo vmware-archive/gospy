@@ -5,24 +5,33 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"fmt"
+	"errors"
 )
 
 const (
 	kOriginalStringReturn = "original string value"
+	kOriginalIntReturn = 12345
 	kOriginalFloatReturn = float64(123.45)
+	kOriginalBoolReturn = true
 )
+
+var kOriginalErrorReturn = errors.New("some error")
 
 var _ = Describe("GoSpy", func() {
 	var subject *GoSpy
 
-	var functionToSpy func(string, int, bool) (string, float64)
+	var functionToSpy func(string, int, bool) (string, int, float64, bool, error)
 	var panicked bool
 
 	BeforeEach(func() {
 	    subject = nil
 		panicked = false
-		functionToSpy = func(string, int, bool) (string, float64) {
-			return kOriginalStringReturn, kOriginalFloatReturn
+		functionToSpy = func(string, int, bool) (string, int, float64, bool, error) {
+			return kOriginalStringReturn,
+				kOriginalIntReturn,
+				kOriginalFloatReturn,
+				kOriginalBoolReturn,
+				kOriginalErrorReturn
 		}
 	})
 
@@ -63,10 +72,13 @@ var _ = Describe("GoSpy", func() {
 				constructorSuccessTests()
 
 				It("should not have affected the function's behaviour", func() {
-					stringResult, floatResult := functionToSpy("something", 10, false)
+					stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("something", 10, false)
 
 					Expect(stringResult).To(Equal(kOriginalStringReturn))
+					Expect(intResult).To(Equal(kOriginalIntReturn))
 					Expect(floatResult).To(Equal(kOriginalFloatReturn))
+					Expect(boolResult).To(Equal(kOriginalBoolReturn))
+					Expect(errorResult).To(Equal(kOriginalErrorReturn))
 				})
 	        })
 
@@ -101,10 +113,13 @@ var _ = Describe("GoSpy", func() {
 				constructorSuccessTests()
 
 				It("should have modified the behaviour of the function to return default type values for each of the return values", func() {
-				    stringResult, floatResult := functionToSpy("something", 10, false)
+					stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("something", 10, false)
 
 					Expect(stringResult).To(Equal(""))
+					Expect(intResult).To(Equal(0))
 					Expect(floatResult).To(Equal(0.0))
+					Expect(boolResult).To(Equal(false))
+					Expect(errorResult).To(BeNil())
 				})
 			})
 
