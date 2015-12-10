@@ -92,6 +92,40 @@ var _ = Describe("GoSpy", func() {
 
 		Describe("SpyAndFake", func() {
 
+			Context("when calling SpyAndFake() with a valid function pointer", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFake(&functionToSpy)
+			    })
+
+				constructorSuccessTests()
+
+				It("should have modified the behaviour of the function to return default type values for each of the return values", func() {
+				    stringResult, floatResult := functionToSpy("something", 10, false)
+
+					Expect(stringResult).To(Equal(""))
+					Expect(floatResult).To(Equal(0.0))
+				})
+			})
+
+			Context("when calling SpyAndFake() with a function object", func() {
+				BeforeEach(func() {
+				    defer panicRecover()
+					subject = SpyAndFake(functionToSpy)
+				})
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFake() with any other unexpected type", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					someVar := "some random var"
+					subject = SpyAndFake(&someVar)
+			    })
+
+				constructorFailTests()
+			})
 		})
 	})
 
