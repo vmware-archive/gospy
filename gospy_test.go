@@ -105,6 +105,31 @@ var _ = Describe("GoSpy", func() {
 			})
 		}
 
+		goSpyRestoreTests := func(existingCallCount int, existingCallList CallList) {
+			Context("when Restore() is called", func() {
+				BeforeEach(func() {
+				    subject.Restore()
+				})
+
+				It("should not have affected the existing call count", func() {
+				    Expect(subject.CallCount()).To(Equal(existingCallCount))
+				})
+
+				It("should not have affected the call list", func() {
+				    Expect(subject.Calls()).To(Equal(existingCallList))
+				})
+
+				It("should no longer monitor subsequent calls to the function", func() {
+				    Expect(subject.CallCount()).To(Equal(existingCallCount))
+
+					functionToSpy("another call", 101, true)
+
+					Expect(subject.CallCount()).To(Equal(existingCallCount))
+					Expect(subject.Calls()).NotTo(ContainElement(ArgList{"another call", 101, true}))
+				})
+			})
+		}
+
 		Context("and the monitored function is called once", func() {
 			kFirstArg, kSecondArg, kThirdArg := "test value", 101, true
 
@@ -129,6 +154,10 @@ var _ = Describe("GoSpy", func() {
 			})
 
 			goSpyResetTests()
+
+			goSpyRestoreTests(1, CallList{
+				{kFirstArg, kSecondArg, kThirdArg},
+			})
 		})
 
 		Context("and the monitored function is called several times", func() {
@@ -159,6 +188,12 @@ var _ = Describe("GoSpy", func() {
 			})
 
 			goSpyResetTests()
+
+			goSpyRestoreTests(3, CallList{
+				{"call 1", 1, true},
+				{"call 2", 2, false},
+				{"call 3", 3, true},
+			})
 		})
 	})
 })
