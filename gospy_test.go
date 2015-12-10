@@ -4,6 +4,7 @@ import (
 	. "github.com/cfmobile/gospy"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"fmt"
 )
 
 const (
@@ -57,35 +58,12 @@ var _ = Describe("GoSpy", func() {
 	})
 
 	Context("when a valid GoSpy object is created", func() {
+		var expectedCalledState bool
+		var expectedCallCount int
+		var expectedCallList CallList
 
-		BeforeEach(func() {
-			subject = Spy(&functionToSpy)
-		})
-
-		It("Called() should indicate that the function hasn't been called yet", func() {
-		    Expect(subject.Called()).To(BeFalse())
-		})
-
-		It("CallCount() should indicate a call count of zero", func() {
-		    Expect(subject.CallCount()).To(BeZero())
-		})
-
-		It("Calls() should indicate a nil call list", func() {
-		    Expect(subject.Calls()).To(BeNil())
-		})
-
-		Context("when ArgsForCall() is called with no calls in the Spy", func() {
-			BeforeEach(func() {
-			    defer panicRecover()
-				subject.ArgsForCall(0)
-			})
-
-			It("should panic", func() {
-				Expect(panicked).To(BeTrue())
-			})
-		})
-
-		goSpyResetTests := func() {
+		// Definition of common tests for each scenario
+		var goSpyResetTests = func() {
 			Context("when Reset() is called", func() {
 				BeforeEach(func() {
 					subject.Reset()
@@ -105,22 +83,22 @@ var _ = Describe("GoSpy", func() {
 			})
 		}
 
-		goSpyRestoreTests := func(existingCallCount int, existingCallList CallList) {
+		var goSpyRestoreTests = func(existingCallCount int, existingCallList CallList) {
 			Context("when Restore() is called", func() {
 				BeforeEach(func() {
-				    subject.Restore()
+					subject.Restore()
 				})
 
 				It("should not have affected the existing call count", func() {
-				    Expect(subject.CallCount()).To(Equal(existingCallCount))
+					Expect(subject.CallCount()).To(Equal(existingCallCount))
 				})
 
 				It("should not have affected the call list", func() {
-				    Expect(subject.Calls()).To(Equal(existingCallList))
+					Expect(subject.Calls()).To(Equal(existingCallList))
 				})
 
 				It("should no longer monitor subsequent calls to the function", func() {
-				    Expect(subject.CallCount()).To(Equal(existingCallCount))
+					Expect(subject.CallCount()).To(Equal(existingCallCount))
 
 					functionToSpy("another call", 101, true)
 
@@ -130,69 +108,120 @@ var _ = Describe("GoSpy", func() {
 			})
 		}
 
-		Context("and the monitored function is called once", func() {
-			kFirstArg, kSecondArg, kThirdArg := "test value", 101, true
+		var goSpyCalledTest = func(expectedCalledState bool) {
+			wasCalled := "was"
+			if !expectedCalledState {
+				wasCalled = "was not"
+			}
 
-			BeforeEach(func() {
-			    functionToSpy(kFirstArg, kSecondArg, kThirdArg)
+			It(fmt.Sprintf("should indicate that the function %s Called()", wasCalled), func() {
+				Expect(subject.Called()).To(Equal(expectedCalledState))
 			})
+		}
 
-			It("Called() should indicate that the function was called", func() {
-				Expect(subject.Called()).To(BeTrue())
+		var goSpyCallCountTest = func(expectedCallCount int) {
+			It(fmt.Sprintf("should indicate a CallCount() of %d", expectedCallCount), func() {
+				Expect(subject.CallCount()).To(Equal(expectedCallCount))
 			})
+		}
 
-			It("CallCount() should indicate that a call was made", func() {
-				Expect(subject.CallCount()).To(Equal(1))
-			})
+		var goSpyCallsTest = func(expectedCallList CallList) {
+			msg := "an expected and ordered"
+			if expectedCallList == nil {
+				msg = "a nil"
+			}
 
-			It("Calls() should return a valid call list", func() {
-			    Expect(subject.Calls()).NotTo(BeNil())
+			It(fmt.Sprintf("should contain %s list of Calls()", msg), func() {
+			    Expect(subject.Calls()).To(Equal(expectedCallList))
 			})
+		}
 
-			It("ArgsForCall() should return the arguments that were used in the call", func() {
-			    Expect(subject.ArgsForCall(0)).To(Equal(ArgList{kFirstArg, kSecondArg, kThirdArg}))
-			})
+
+		BeforeEach(func() {
+			subject = Spy(&functionToSpy)
+		})
+
+		Context("as soon as it's created", func() {
+			expectedCalledState = false
+		    expectedCallCount = 0
+			expectedCallList = nil
+
+			goSpyCalledTest(expectedCalledState)
+
+			goSpyCallCountTest(expectedCallCount)
+
+			goSpyCallsTest(expectedCallList)
 
 			goSpyResetTests()
 
-			goSpyRestoreTests(1, CallList{
-				{kFirstArg, kSecondArg, kThirdArg},
+			goSpyRestoreTests(expectedCallCount, expectedCallList)
+
+			Context("when ArgsForCall() is called with no calls in the Spy", func() {
+				BeforeEach(func() {
+					defer panicRecover()
+					subject.ArgsForCall(0)
+				})
+
+				It("should panic", func() {
+					Expect(panicked).To(BeTrue())
+				})
+			})
+		})
+
+		Context("and the monitored function is called once", func() {
+			expectedCalledState = true
+			expectedCallCount = 1
+			expectedArgList := ArgList{"test value", 101, true}
+			expectedCallList = CallList{expectedArgList}
+
+			BeforeEach(func() {
+			    functionToSpy("test value", 101, true)
+			})
+
+			goSpyCalledTest(expectedCalledState)
+
+			goSpyCallCountTest(expectedCallCount)
+
+			goSpyCallsTest(expectedCallList)
+
+			goSpyResetTests()
+
+			goSpyRestoreTests(expectedCallCount, expectedCallList)
+
+			It("ArgsForCall() should return the arguments that were used in the call", func() {
+			    Expect(subject.ArgsForCall(0)).To(Equal(expectedArgList))
 			})
 		})
 
 		Context("and the monitored function is called several times", func() {
+			expectedCalledState = true
+			expectedCallCount = 3
+			expectedCallList = CallList{
+				{"call 1", 1, true},
+				{"call 2", 2, false},
+				{"call 3", 3, true},
+			}
+
 			BeforeEach(func() {
 			    functionToSpy("call 1", 1, true)
 				functionToSpy("call 2", 2, false)
 				functionToSpy("call 3", 3, true)
 			})
 
-			It("CallCount() should reflect the right number of calls", func() {
-			    Expect(subject.CallCount()).To(Equal(3))
-			})
+			goSpyCalledTest(expectedCalledState)
 
-			It("Calls() should return the arguments for each call in the order they were made", func() {
-				expectedCallList := CallList{
-					{"call 1", 1, true},
-					{"call 2", 2, false},
-					{"call 3", 3, true},
-				}
+			goSpyCallCountTest(expectedCallCount)
 
-				Expect(subject.Calls()).To(Equal(expectedCallList))
-			})
-
-			It("ArgsForCall(n) should return the arguments for the n-th call (0-based index) ", func() {
-			    Expect(subject.ArgsForCall(0)).To(Equal(ArgList{"call 1", 1, true}))
-			    Expect(subject.ArgsForCall(1)).To(Equal(ArgList{"call 2", 2, false}))
-			    Expect(subject.ArgsForCall(2)).To(Equal(ArgList{"call 3", 3, true}))
-			})
+			goSpyCallsTest(expectedCallList)
 
 			goSpyResetTests()
 
-			goSpyRestoreTests(3, CallList{
-				{"call 1", 1, true},
-				{"call 2", 2, false},
-				{"call 3", 3, true},
+			goSpyRestoreTests(expectedCallCount, expectedCallList)
+
+			It("ArgsForCall(n) should return the arguments for the n-th call (0-based index) ", func() {
+			    Expect(subject.ArgsForCall(0)).To(Equal(expectedCallList[0]))
+			    Expect(subject.ArgsForCall(1)).To(Equal(expectedCallList[1]))
+			    Expect(subject.ArgsForCall(2)).To(Equal(expectedCallList[2]))
 			})
 		})
 	})
