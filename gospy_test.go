@@ -85,7 +85,27 @@ var _ = Describe("GoSpy", func() {
 			})
 		})
 
-		Context("and the function is called", func() {
+		goSpyResetTests := func() {
+			Context("when Reset() is called", func() {
+				BeforeEach(func() {
+					subject.Reset()
+				})
+
+				It("should zero the call count", func() {
+					Expect(subject.CallCount()).To(BeZero())
+				})
+
+				It("should return a nil call list", func() {
+					Expect(subject.Calls()).To(BeNil())
+				})
+
+				It("should have reset the call indicator", func() {
+					Expect(subject.Called()).To(BeFalse())
+				})
+			})
+		}
+
+		Context("and the monitored function is called once", func() {
 			kFirstArg, kSecondArg, kThirdArg := "test value", 101, true
 
 			BeforeEach(func() {
@@ -107,6 +127,8 @@ var _ = Describe("GoSpy", func() {
 			It("ArgsForCall() should return the arguments that were used in the call", func() {
 			    Expect(subject.ArgsForCall(0)).To(Equal(ArgList{kFirstArg, kSecondArg, kThirdArg}))
 			})
+
+			goSpyResetTests()
 		})
 
 		Context("and the monitored function is called several times", func() {
@@ -135,6 +157,8 @@ var _ = Describe("GoSpy", func() {
 			    Expect(subject.ArgsForCall(1)).To(Equal(ArgList{"call 2", 2, false}))
 			    Expect(subject.ArgsForCall(2)).To(Equal(ArgList{"call 3", 3, true}))
 			})
+
+			goSpyResetTests()
 		})
 	})
 })
