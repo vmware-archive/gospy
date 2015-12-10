@@ -62,8 +62,9 @@ var _ = Describe("GoSpy", func() {
 
 				constructorSuccessTests()
 
-				It("should not affect the function's behaviour", func() {
+				It("should not have affected the function's behaviour", func() {
 					stringResult, floatResult := functionToSpy("something", 10, false)
+
 					Expect(stringResult).To(Equal(kOriginalStringReturn))
 					Expect(floatResult).To(Equal(kOriginalFloatReturn))
 				})
@@ -82,7 +83,7 @@ var _ = Describe("GoSpy", func() {
 			    BeforeEach(func() {
 			        defer panicRecover()
 					someVar := "some random var"
-					subject = Spy(someVar)
+					subject = Spy(&someVar)
 			    })
 
 				constructorFailTests()
