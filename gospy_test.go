@@ -109,6 +109,32 @@ var _ = Describe("GoSpy", func() {
 			})
 		})
 
+		Context("and the monitored function is called several times", func() {
+			BeforeEach(func() {
+			    functionToSpy("call 1", 1, true)
+				functionToSpy("call 2", 2, false)
+				functionToSpy("call 3", 3, true)
+			})
 
+			It("CallCount() should reflect the right number of calls", func() {
+			    Expect(subject.CallCount()).To(Equal(3))
+			})
+
+			It("Calls() should return the arguments for each call in the order they were made", func() {
+				expectedCallList := CallList{
+					{"call 1", 1, true},
+					{"call 2", 2, false},
+					{"call 3", 3, true},
+				}
+
+				Expect(subject.Calls()).To(Equal(expectedCallList))
+			})
+
+			It("ArgsForCall(n) should return the arguments for the n-th call (0-based index) ", func() {
+			    Expect(subject.ArgsForCall(0)).To(Equal(ArgList{"call 1", 1, true}))
+			    Expect(subject.ArgsForCall(1)).To(Equal(ArgList{"call 2", 2, false}))
+			    Expect(subject.ArgsForCall(2)).To(Equal(ArgList{"call 3", 3, true}))
+			})
+		})
 	})
 })
