@@ -32,21 +32,35 @@ var _ = Describe("GoSpy", func() {
 
 	Describe("Constructors", func() {
 
+		var constructorSuccessTests = func() {
+			It("should not have panicked", func() {
+				Expect(panicked).To(BeFalse())
+			})
+
+			It("should have returned a valid *GoSpy object", func() {
+				Expect(subject).NotTo(BeNil())
+			})
+		}
+
+		var constructorFailTests = func() {
+			It("should have panicked", func() {
+				Expect(panicked).To(BeTrue())
+			})
+
+			It("should not have returned a valid *GoSpy object", func() {
+				Expect(subject).To(BeNil())
+			})
+		}
+
 	    Describe("Spy", func() {
 
-	        Context("when calling Spy with a valid function pointer", func() {
+	        Context("when calling Spy() with a valid function pointer", func() {
 				BeforeEach(func() {
 					defer panicRecover()
 				    subject = Spy(&functionToSpy)
 				})
 
-				It("should not have panicked", func() {
-				    Expect(panicked).To(BeFalse())
-				})
-
-				It("should have returned a valid *GoSpy object", func() {
-				    Expect(subject).NotTo(BeNil())
-				})
+				constructorSuccessTests()
 
 				It("should not affect the function's behaviour", func() {
 					stringResult, floatResult := functionToSpy("something", 10, false)
@@ -54,7 +68,30 @@ var _ = Describe("GoSpy", func() {
 					Expect(floatResult).To(Equal(kOriginalFloatReturn))
 				})
 	        })
+
+			Context("when calling Spy() with a function var", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = Spy(functionToSpy)
+			    })
+
+				constructorFailTests()
+			})
+
+			Context("when calling Spy() with any other unexpected type", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					someVar := "some random var"
+					subject = Spy(someVar)
+			    })
+
+				constructorFailTests()
+			})
 	    })
+
+		Describe("SpyAndFake", func() {
+
+		})
 	})
 
 	Context("when a valid GoSpy object is created", func() {
