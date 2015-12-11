@@ -61,6 +61,18 @@ var _ = Describe("GoSpy", func() {
 			})
 		}
 
+		var spyAndFakeSuccessTests = func() {
+			It("should have modified the behaviour of the function to return default type values for each of the return values", func() {
+				stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("something", 10, false)
+
+				Expect(stringResult).To(Equal(""))
+				Expect(intResult).To(Equal(0))
+				Expect(floatResult).To(Equal(0.0))
+				Expect(boolResult).To(Equal(false))
+				Expect(errorResult).To(BeNil())
+			})
+		}
+
 	    Describe("Spy", func() {
 
 	        Context("when calling Spy() with a valid function pointer", func() {
@@ -112,15 +124,7 @@ var _ = Describe("GoSpy", func() {
 
 				constructorSuccessTests()
 
-				It("should have modified the behaviour of the function to return default type values for each of the return values", func() {
-					stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("something", 10, false)
-
-					Expect(stringResult).To(Equal(""))
-					Expect(intResult).To(Equal(0))
-					Expect(floatResult).To(Equal(0.0))
-					Expect(boolResult).To(Equal(false))
-					Expect(errorResult).To(BeNil())
-				})
+				spyAndFakeSuccessTests()
 			})
 
 			Context("when calling SpyAndFake() with a function object", func() {
@@ -137,6 +141,74 @@ var _ = Describe("GoSpy", func() {
 			        defer panicRecover()
 					someVar := "some random var"
 					subject = SpyAndFake(&someVar)
+			    })
+
+				constructorFailTests()
+			})
+		})
+
+		Describe("SpyAndFakeWithReturn", func() {
+
+			Context("when calling SpyAndFakeWithReturn() with a valid function pointer and valid mock return values", func() {
+				mockStringValue := "mock value"
+				mockIntValue := 1
+				mockFloatValue := 2.0
+				mockBoolValue := false
+				mockErrorValue := errors.New("mock error")
+
+				BeforeEach(func() {
+				    defer panicRecover()
+					subject = SpyAndFakeWithReturn(&functionToSpy, mockStringValue, mockIntValue, mockFloatValue, mockBoolValue, mockErrorValue)
+				})
+
+				constructorSuccessTests()
+
+				It("should have altered the function to just return the mock values specified", func() {
+					stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("something", 10, false)
+
+					Expect(stringResult).To(Equal(mockStringValue))
+					Expect(intResult).To(Equal(mockIntValue))
+					Expect(floatResult).To(Equal(mockFloatValue))
+					Expect(boolResult).To(Equal(mockBoolValue))
+					Expect(errorResult).To(Equal(mockErrorValue))
+				})
+			})
+
+			Context("when calling SpyAndFakeWithReturn() with no fake return values while the monitored function expects return values", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithReturn(&functionToSpy)
+			    })
+
+				// It should succeed and mock the function to return default type values for each of the return values
+
+				constructorSuccessTests()
+
+				spyAndFakeSuccessTests()
+			})
+
+			Context("when calling SpyAndFakeWithReturn() with an invalid first argument (not a function pointer)", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithReturn(functionToSpy, "mock", 1, 2.0, false, nil)
+			    })
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFakeWithReturn() with an incorrect number of arguments (not matching the number of return values in the monitored function)", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithReturn(&functionToSpy, "mock", 1)
+			    })
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFakeWithReturn() with an incorrect variable type for any of the mock return values", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithReturn(&functionToSpy, 0, 1, 2.0, false, nil)
 			    })
 
 				constructorFailTests()

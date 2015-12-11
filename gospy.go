@@ -113,30 +113,33 @@ func (self *GoSpy) getDefaultFn() (func(args []reflect.Value) []reflect.Value) {
 }
 
 func (self *GoSpy) getFnWithReturnValues(fakeReturnValues []interface{}) (func(args []reflect.Value) []reflect.Value) {
+	targetType := self.mock.GetTarget().Type()
+
 	// Gets the expected number of return values from the target
-	var numReturnValues = self.mock.GetTarget().Type().NumOut()
+	var numReturnValues = targetType.NumOut()
 
 	if fakeReturnValues != nil && numReturnValues != len(fakeReturnValues) {
-		panic("Invalid number of return values. Either specify all or none")
+		panic("Invalid number of return values. Either specify the exact number of return values or none for defaults")
 	}
 
-	return func(args []reflect.Value) (results []reflect.Value) {
-		// Builds slice of return values, if required
-		targetType := self.mock.GetTarget().Type()
-		for i := 0; i < numReturnValues; i++ {
-			returnItem := reflect.New(targetType.Out(i))
+	res := make([]reflect.Value, 0)
 
-			var returnElem = returnItem.Elem()
+	// Builds slice of return values, if required
+	for i := 0; i < numReturnValues; i++ {
+		returnItem := reflect.New(targetType.Out(i))
 
-			// Gets value for return from fakeReturnValues, or leaves default constructed value if not available
-			if fakeReturnValues != nil && fakeReturnValues[i] != nil {
-				returnElem.Set(reflect.ValueOf(fakeReturnValues[i]))
-			}
+		var returnElem = returnItem.Elem()
 
-			results = append(results, returnElem)
+		// Gets value for return from fakeReturnValues, or leaves default constructed value if not available
+		if fakeReturnValues != nil && fakeReturnValues[i] != nil {
+			returnElem.Set(reflect.ValueOf(fakeReturnValues[i]))
 		}
 
-		return results
+		res = append(res, returnElem)
+	}
+
+	return func([]reflect.Value) []reflect.Value {
+		return res
 	}
 }
 
