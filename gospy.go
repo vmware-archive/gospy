@@ -16,28 +16,28 @@ type GoSpy struct {
 	mock  *gmock.GMock
 }
 
-func Spy(targetFuncVar interface{}) *GoSpy {
-	spy := createSpy(targetFuncVar)
+func Spy(targetFuncPtr interface{}) *GoSpy {
+	spy := createSpy(targetFuncPtr)
 	defaultFn := spy.getDefaultFn()
 	spy.setTargetFn(defaultFn)
 	return spy
 }
 
-func SpyAndFake(targetFuncVar interface{}) *GoSpy {
-	return SpyAndFakeWithReturn(targetFuncVar) //nil fakeReturnValues will create default
+func SpyAndFake(targetFuncPtr interface{}) *GoSpy {
+	return SpyAndFakeWithReturn(targetFuncPtr) //nil fakeReturnValues will create default
 }
 
-func SpyAndFakeWithReturn(targetFuncVar interface{}, fakeReturnValues ...interface{}) *GoSpy {
-	spy := createSpy(targetFuncVar)
+func SpyAndFakeWithReturn(targetFuncPtr interface{}, fakeReturnValues ...interface{}) *GoSpy {
+	spy := createSpy(targetFuncPtr)
 	fakeReturnFn := spy.getFnWithReturnValues(fakeReturnValues)
 	spy.setTargetFn(fakeReturnFn)
 	return spy
 }
 
-func SpyAndFakeWithFunc(targetFuncVar interface{}, mockFunc interface{}) *GoSpy {
-	spy := createSpy(targetFuncVar)
+func SpyAndFakeWithFunc(targetFuncPtr interface{}, mockFunc interface{}) *GoSpy {
+	spy := createSpy(targetFuncPtr)
 
-	if err := mockFuncIsValid(targetFuncVar, mockFunc); err != nil {
+	if err := mockFuncIsValid(targetFuncPtr, mockFunc); err != nil {
 		panic(err.Error())
 	}
 
