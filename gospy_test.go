@@ -212,6 +212,93 @@ var _ = Describe("GoSpy", func() {
 				constructorFailTests()
 			})
 		})
+
+		Describe("SpyAndFakeWithFunc", func() {
+
+			Context("when calling SpyAndFakeWithFunc() with a valid target and valid mock function", func() {
+				mockStringValue := "mock value"
+				mockIntValue := 1
+				mockFloatValue := 2.0
+				mockBoolValue := false
+				mockErrorValue := errors.New("mock error")
+
+				mockFunction := func(s string, i int, b bool) (string, int, float64, bool, error) {
+					// Return error if b is false
+					if b {
+						return mockStringValue, mockIntValue, mockFloatValue, mockBoolValue, nil
+					} else {
+						return "", 0, 0.0, false, mockErrorValue
+					}
+				}
+
+				BeforeEach(func() {
+				    defer panicRecover()
+					subject = SpyAndFakeWithFunc(&functionToSpy, mockFunction)
+				})
+
+				constructorSuccessTests()
+
+				It("should modify the monitored function's behaviour to the mock function's", func() {
+					stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("", 0, true)
+
+					Expect(stringResult).To(Equal(mockStringValue))
+					Expect(intResult).To(Equal(mockIntValue))
+					Expect(floatResult).To(Equal(mockFloatValue))
+					Expect(boolResult).To(Equal(mockBoolValue))
+					Expect(errorResult).To(BeNil())
+
+					stringResult, intResult, floatResult, boolResult, errorResult = functionToSpy("", 0, false)
+
+					Expect(stringResult).To(BeEmpty())
+					Expect(intResult).To(BeZero())
+					Expect(floatResult).To(BeZero())
+					Expect(boolResult).To(BeFalse())
+					Expect(errorResult).To(Equal(mockErrorValue))
+				})
+		    })
+
+			Context("when calling SpyAndFakeWithFunc() with a functionPtr as the mock function", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					mockFunc := func(s string, i int, b bool) (string, int, float64, bool, error) {
+						return "", 0, 0.0, false, nil
+					}
+					subject = SpyAndFakeWithFunc(&functionToSpy, &mockFunc)
+			    })
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFakeWithFunc() with a mock function that doesn't have a matching signature with the target's", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithFunc(&functionToSpy, func() {})
+			    })
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFakeWithFunc() with a non-functionPtr target", func() {
+			    BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithFunc(functionToSpy, func(s string, i int, b bool) (string, int, float64, bool, error) {
+						return "", 0, 0.0, false, nil
+					})
+			    })
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFakeWithFunc() with an incompatible type as the mock function", func() {
+				BeforeEach(func() {
+				    defer panicRecover()
+					someVar := "some random var"
+					subject = SpyAndFakeWithFunc(&functionToSpy, someVar)
+				})
+
+				constructorFailTests()
+			})
+		})
 	})
 
 	Context("when a valid GoSpy object is created", func() {
