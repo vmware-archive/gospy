@@ -465,5 +465,62 @@ var _ = Describe("GoSpy", func() {
 			    Expect(subject.ArgsForCall(2)).To(Equal(expectedCallList[2]))
 			})
 		})
+
+		Context("and the function being monitored is variadic", func() {
+			variadicFunction := func(s string, args ...interface{}) int {
+				return len(args)
+			}
+
+			expectedCalledState := true
+			expectedCallCount := 3
+			expectedCallList := CallList{ // Variadic functions' arguments are stored as a single argument of type []interface{}
+				{"A", []interface{}{1}},
+				{"B", []interface{}{1, 2}},
+				{"C", []interface{}{1, 2, 3}},
+			}
+
+		    BeforeEach(func() {
+		        subject = Spy(&variadicFunction)
+
+				variadicFunction("A", 1)
+				variadicFunction("B", 1, 2)
+				variadicFunction("C", 1, 2, 3)
+		    })
+
+			goSpyCalledTest(expectedCalledState)
+
+			goSpyCallCountTest(expectedCallCount)
+
+			goSpyCallsTest(expectedCallList)
+
+			It("ArgsForCall(n) should return the arguments for the n-th call (0-based index) ", func() {
+				Expect(subject.ArgsForCall(0)).To(Equal(expectedCallList[0]))
+				Expect(subject.ArgsForCall(1)).To(Equal(expectedCallList[1]))
+				Expect(subject.ArgsForCall(2)).To(Equal(expectedCallList[2]))
+			})
+
+			Context("when Restore() is called", func() {
+				BeforeEach(func() {
+					subject.Restore()
+				})
+
+				It("should not have affected the existing call count", func() {
+					Expect(subject.CallCount()).To(Equal(expectedCallCount))
+				})
+
+				It("should not have affected the call list", func() {
+					Expect(subject.Calls()).To(Equal(expectedCallList))
+				})
+
+				It("should no longer monitor subsequent calls to the function", func() {
+					Expect(subject.CallCount()).To(Equal(expectedCallCount))
+
+					variadicFunction("C", 1, 2, 3, 4)
+
+					Expect(subject.CallCount()).To(Equal(expectedCallCount))
+					Expect(subject.Calls()).NotTo(ContainElement(ArgList{"D", []interface{}{1, 2, 3, 4}}))
+				})
+			})
+		})
 	})
 })
