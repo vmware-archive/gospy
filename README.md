@@ -16,7 +16,31 @@ Just use go get
 
 ##API
 
+####Types
+
+#####GoSpy
+```go
+type GoSpy struct
+```
+
+The object that monitors a target function, records calls to the target and their arguments, and is responsible for mocking and restoring the target function's behaviour.
+
+#####ArgList
+```go
+type ArgList []interface{}
+```
+
+Represents a list of arguments in a function call.
+
+#####CallList
+```go
+type CallList []ArgList
+```
+
+Represents a list of function calls, complete with all arguments used.
+
 ####Constructors
+
 #####`func Spy(targetFuncPtr interface{}) *GoSpy`
 
 Basic constructor of a `GoSpy` object.
