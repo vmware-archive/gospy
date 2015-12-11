@@ -2,7 +2,7 @@
 
 Go testing utility that lets you monitor calls to a function, verify which arguments were passed in and mock its behaviour.
 
-This was created with unit testing in mind, to make it easier to verify interactions with dependencies and isolate components. Inspired by [Counterfeiter](https://github.com/maxbrunsfeld/counterfeiter) and [Cedar's Doubles](https://github.com/pivotal/cedar/wiki/Writing-specs)
+This was created with unit testing in mind, to make it easier to verify interactions with dependencies and isolate components. Inspired by [Counterfeiter](https://github.com/maxbrunsfeld/counterfeiter) and [Cedar's Doubles](https://github.com/pivotal/cedar/wiki/Writing-specs#doubles)
 
 Compatibility verified with Go 1.4 and up.
 
