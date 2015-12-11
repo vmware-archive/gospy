@@ -61,7 +61,7 @@ var _ = Describe("GoSpy", func() {
 			})
 		}
 
-		var spyAndFakeSuccessTests = func() {
+		var itShouldMakeTheFunctionReturnDefaultValues = func() {
 			It("should have modified the behaviour of the function to return default type values for each of the return values", func() {
 				stringResult, intResult, floatResult, boolResult, errorResult := functionToSpy("something", 10, false)
 
@@ -124,7 +124,7 @@ var _ = Describe("GoSpy", func() {
 
 				constructorSuccessTests()
 
-				spyAndFakeSuccessTests()
+				itShouldMakeTheFunctionReturnDefaultValues()
 			})
 
 			Context("when calling SpyAndFake() with a function object", func() {
@@ -180,11 +180,9 @@ var _ = Describe("GoSpy", func() {
 					subject = SpyAndFakeWithReturn(&functionToSpy)
 			    })
 
-				// It should succeed and mock the function to return default type values for each of the return values
-
 				constructorSuccessTests()
 
-				spyAndFakeSuccessTests()
+				itShouldMakeTheFunctionReturnDefaultValues()
 			})
 
 			Context("when calling SpyAndFakeWithReturn() with an invalid first argument (not a function pointer)", func() {
