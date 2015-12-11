@@ -16,7 +16,7 @@ Just use go get
 
 ##API
 
-####Types
+###Types
 
 #####GoSpy
 ```go
@@ -39,9 +39,12 @@ type CallList []ArgList
 
 Represents a list of function calls, complete with all arguments used.
 
-####Constructors
+###Constructors
 
-#####`func Spy(targetFuncPtr interface{}) *GoSpy`
+#####Spy()
+```go
+func Spy(targetFuncPtr interface{}) *GoSpy
+```
 
 Basic constructor of a `GoSpy` object.
 This constructor doesn't modify the behaviour of the target function.
@@ -51,7 +54,10 @@ This constructor doesn't modify the behaviour of the target function.
 **Returns:** a pointer to a new `GoSpy` object. After the constructor returns, the target function will be monitored for calls until `spy.Restore()` is called.
 
 
-#####`func SpyAndFake(targetFuncPtr interface{}) *GoSpy`
+#####SpyAndFake()
+```go
+func SpyAndFake(targetFuncPtr interface{}) *GoSpy
+```
 
 Constructor of a `GoSpy` object that modifies the target's behaviour to just return the Zero value for each of it's return values.
 
@@ -59,7 +65,10 @@ Constructor of a `GoSpy` object that modifies the target's behaviour to just ret
 
 **Returns:** a pointer to a new `GoSpy` object. After the constructor returns, the target function have it's behaviour modified and will be monitored for calls until `spy.Restore()` is called.
 
-#####`func SpyAndFakeWithReturn(targetFuncPtr interface{}, fakeReturnValues ...interface{}) *GoSpy`
+#####SpyAndFakeWithReturn()
+```go
+func SpyAndFakeWithReturn(targetFuncPtr interface{}, fakeReturnValues ...interface{}) *GoSpy
+```
 
 Constructor of a `GoSpy` object that modifies the target's behaviour to return a matching set of mock return values specified by the user.
 
@@ -73,7 +82,10 @@ Constructor of a `GoSpy` object that modifies the target's behaviour to return a
 
 **Returns:** a pointer to a new `GoSpy` object. After the constructor returns, the target function have it's behaviour modified and will be monitored for calls until `spy.Restore()` is called.
 
-#####`func SpyAndFakeWithFunc(targetFuncPtr interface{}, mockFunc interface{}) *GoSpy`
+#####SpyAndFakeWithFunc()
+```go
+func SpyAndFakeWithFunc(targetFuncPtr interface{}, mockFunc interface{}) *GoSpy
+```
 
 Constructor of a `GoSpy` object that modifies the target's behaviour to be replaced by another specified mock function (with identical signature).
 
