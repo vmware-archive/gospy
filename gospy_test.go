@@ -302,9 +302,6 @@ var _ = Describe("GoSpy", func() {
 	})
 
 	Context("when a valid GoSpy object is created", func() {
-		var expectedCalledState bool
-		var expectedCallCount int
-		var expectedCallList CallList
 
 		// Definition of common tests for each scenario
 		var goSpyResetTests = func() {
@@ -386,9 +383,9 @@ var _ = Describe("GoSpy", func() {
 		})
 
 		Context("as soon as it's created", func() {
-			expectedCalledState = false
-		    expectedCallCount = 0
-			expectedCallList = nil
+			expectedCalledState := false
+		    expectedCallCount := 0
+			expectedCallList := CallList(nil)
 
 			goSpyCalledTest(expectedCalledState)
 
@@ -413,10 +410,10 @@ var _ = Describe("GoSpy", func() {
 		})
 
 		Context("and the monitored function is called once", func() {
-			expectedCalledState = true
-			expectedCallCount = 1
+			expectedCalledState := true
+			expectedCallCount := 1
 			expectedArgList := ArgList{"test value", 101, true}
-			expectedCallList = CallList{expectedArgList}
+			expectedCallList := CallList{expectedArgList}
 
 			BeforeEach(func() {
 			    functionToSpy("test value", 101, true)
@@ -438,9 +435,9 @@ var _ = Describe("GoSpy", func() {
 		})
 
 		Context("and the monitored function is called several times", func() {
-			expectedCalledState = true
-			expectedCallCount = 3
-			expectedCallList = CallList{
+			expectedCalledState := true
+			expectedCallCount := 3
+			expectedCallList := CallList{
 				{"call 1", 1, true},
 				{"call 2", 2, false},
 				{"call 3", 3, true},
