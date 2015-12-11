@@ -126,18 +126,12 @@ func (self *GoSpy) getFnWithReturnValues(fakeReturnValues []interface{}) (func(a
 }
 
 func (self *GoSpy) getFnWithMockFunc(mockFunc interface{}) (func(args []reflect.Value) []reflect.Value) {
-	mockFuncValue := reflect.ValueOf(mockFunc)
-	if !mockFuncValue.IsValid() {
-		targetType := self.mock.GetTarget().Type()
-		mockFuncValue = reflect.Zero(targetType)
-	}
-
-	return mockFuncValue.Call
+	return reflect.ValueOf(mockFunc).Call
 }
 
 func createSpy(targetFuncPtr interface{}) *GoSpy {
-	if !targetIsValid(targetFuncPtr) {
-		panic("Spy target has to be the pointer to a Func variable")
+	if err := targetIsValid(targetFuncPtr); err != nil {
+		panic(err.Error())
 	}
 
 	spy := &GoSpy{calls: nil, mock: gmock.CreateMockWithTarget(targetFuncPtr)}
@@ -145,14 +139,27 @@ func createSpy(targetFuncPtr interface{}) *GoSpy {
 	return spy
 }
 
-func targetIsValid(target interface{}) bool {
+func targetIsValid(target interface{}) error {
+	if target == nil {
+		return errors.New("Target function can't be nil")
+	}
+
 	// Target has to be a ptr to a function
 	targetValue := reflect.ValueOf(target)
-	return targetValue.Kind() == reflect.Ptr &&
-	targetValue.Elem().Kind() == reflect.Func
+	isFuncPtr := targetValue.Kind() == reflect.Ptr && targetValue.Elem().Kind() == reflect.Func
+
+	if !isFuncPtr {
+		return errors.New(fmt.Sprintf("Spy target has to be the pointer to a Func variable [type: %+v]", targetValue.Kind()))
+	}
+
+	return nil
 }
 
 func mockFuncIsValid(target interface{}, mockFunc interface{}) error {
+	if mockFunc == nil {
+		return errors.New("Fake function can't be nil")
+	}
+
 	targetType := reflect.ValueOf(target).Type().Elem() // target is a *func()
 	mockFuncType := reflect.ValueOf(mockFunc).Type()
 

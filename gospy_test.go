@@ -112,7 +112,16 @@ var _ = Describe("GoSpy", func() {
 
 				constructorFailTests()
 			})
-	    })
+
+			Context("when calling Spy() with nil", func() {
+				BeforeEach(func() {
+					defer panicRecover()
+					subject = Spy(nil)
+				})
+
+				constructorFailTests()
+			})
+		})
 
 		Describe("SpyAndFake", func() {
 
@@ -295,6 +304,15 @@ var _ = Describe("GoSpy", func() {
 					someVar := "some random var"
 					subject = SpyAndFakeWithFunc(&functionToSpy, someVar)
 				})
+
+				constructorFailTests()
+			})
+
+			Context("when calling SpyAndFakeWithFunc() with a nil mock function", func() {
+				BeforeEach(func() {
+			        defer panicRecover()
+					subject = SpyAndFakeWithFunc(&functionToSpy, nil)
+			    })
 
 				constructorFailTests()
 			})
