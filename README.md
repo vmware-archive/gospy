@@ -32,6 +32,248 @@ import (
 4. If at any point you would like to start monitoring from scratch again, call `Reset()` in the `*GoSpy`. It just empties the object from the calls that have been recorded already, but doesn't change the fake behaviour (if any) that has been set.
 5. When you're done monitoring your target, call `Restore()` on the `*GoSpy` object. **This is very important, otherwise the behaviour of your target will remain modified for the lifetime of your application.**. After restoring, it's safe to let the `*GoSpy` object get garbage-collected.
 
+##Examples
+### Using basic constructor `Spy()`
+Showcases the main functionality of GoSpy - `Spy()` constructor, and GoSpy methods `Called()`, `CallCount()`, `Calls()`, `ArgsForCall()`, `Reset()` and `Restore()`.
+```go
+package main
+import (
+  "fmt"
+  "github.com/cfmobile/gospy"
+)
+
+func main() {
+  MyFunction := func(s string, i int) {
+    // Do something
+  }
+
+  spy := gospy.Spy(&MyFunction)
+
+  fmt.Println("** Spy Created **")
+  fmt.Println("MyFunction was called? ", spy.Called())
+  fmt.Println("Number of calls to MyFunction: ", spy.CallCount())
+  fmt.Println("Calls to MyFunction: ", spy.Calls())
+
+  MyFunction("abc", 0)
+  MyFunction("bcd", 1)
+
+  fmt.Println("** After Calls **")
+  fmt.Println("MyFunction was called? ", spy.Called())
+  fmt.Println("Number of calls to MyFunction: ", spy.CallCount())
+  fmt.Println("Calls to MyFunction: ", spy.Calls())
+  fmt.Println("Args for first call to MyFunction: ", spy.ArgsForCall(0))
+  fmt.Println("Args for second call to MyFunction: ", spy.ArgsForCall(1))
+
+  spy.Reset()
+  MyFunction("cde", 2)
+
+  fmt.Println("** After Reset **")
+  fmt.Println("MyFunction was called? ", spy.Called())
+  fmt.Println("Number of calls to MyFunction: ", spy.CallCount())
+  fmt.Println("Calls to MyFunction: ", spy.Calls())
+  fmt.Println("Args for first call to MyFunction: ", spy.ArgsForCall(0))
+
+  spy.Restore()
+  MyFunction("def", 3)
+
+  fmt.Println("** After Restore **")
+  fmt.Println("MyFunction was called? ", spy.Called())
+  fmt.Println("Number of calls to MyFunction: ", spy.CallCount())
+  fmt.Println("Args for calls to MyFunction: ", spy.Calls())
+  fmt.Println("Args for first call to MyFunction: ", spy.ArgsForCall(0))
+}
+```
+The execution of the example above should print:
+```
+** Spy Created **
+MyFunction was called?  false
+Number of calls to MyFunction:  0
+Calls to MyFunction:  []
+** After Calls **
+MyFunction was called?  true
+Number of calls to MyFunction:  2
+Calls to MyFunction:  [[abc 0] [bcd 1]]
+Args for first call to MyFunction:  [abc 0]
+Args for second call to MyFunction:  [bcd 1]
+** After Reset **
+MyFunction was called?  true
+Number of calls to MyFunction:  1
+Calls to MyFunction:  [[cde 2]]
+Args for first call to MyFunction:  [cde 2]
+** After Restore **
+MyFunction was called?  true
+Number of calls to MyFunction:  1
+Args for calls to MyFunction:  [[cde 2]]
+Args for first call to MyFunction:  [cde 2]
+```
+**Note**
+If you have a package function that you would like to spy on, like this:
+```go
+package main
+import (
+  "fmt"
+  "github.com/cfmobile/gospy"
+)
+
+func MyFunction(s string, i int) {
+  // Do something
+}
+
+func main() {
+  //...
+}
+```
+The Go compiler doesn't let you get a pointer to that `MyFunction` directly (`./main.go:13: cannot take the address of MyFunction`). In that case, we suggest using a func var that points to the desired function, and using that var in your code to invoke it:
+```go
+package main
+import (
+  "fmt"
+  "github.com/cfmobile/gospy"
+)
+
+func MyFunction(s string, i int) {
+  // Do something
+}
+
+func main() {
+  MyPackageFunction := MyFunction
+
+  spy := Spy(&MyPackageFunction)
+
+  MyPackageFunction("abc", 0)
+  //...
+}
+```
+
+### Using `SpyAndFake()`
+`SpyAndFake()` creates a default mock function that returns the Zero-value for each of the return values.
+```go
+package main
+import (
+  "fmt"
+  "github.com/cfmobile/gospy"
+)
+
+func main() {
+  MyFunction := func() (string, int) {
+    return "Hello world", 1
+  }
+
+  text, num := MyFunction()
+
+  fmt.Println("** Before Spy Creation **")
+  fmt.Println("MyFunction() returns: ", text, num)
+
+  spy := gospy.SpyAndFake(&MyFunction)
+  text, num = MyFunction()
+
+  fmt.Println("** After Spy Creation **")
+  fmt.Println("MyFunction() returns: ", text, num)
+
+  spy.Restore()
+  text, num = MyFunction()
+
+  fmt.Println("** After Spy Restore **")
+  fmt.Println("MyFunction() returns: ", text, num)
+}
+```
+Running the above example produces:
+```
+** Before Spy Creation **
+MyFunction() returns:  Hello world 1
+** After Spy Creation **
+MyFunction() returns:   0
+** After Spy Restore **
+MyFunction() returns:  Hello world 1
+```
+Note that the second run (After Spy Creation) returns an empty string and the number 0, both are the zero-values for each type (string and int).
+
+### Using `SpyAndFakeWithReturn()`
+`SpyAndFakeWithReturn()` creates a mock function that returns the specified mock values. The constructor has to be called with the exact same number of arguments, types and order as the return values of the target, otherwise it panics. The only exception to that is to pass no arguments, which would cause this function to generate zero-values for each return type (in essence running like `SpyAndFake()`)
+```go
+package main
+import (
+  "fmt"
+  "github.com/cfmobile/gospy"
+)
+
+func main() {
+  MyFunction := func() (string, int) {
+    return "Hello world", 1
+  }
+
+  text, num := MyFunction()
+
+  fmt.Println("** Before Spy Creation **")
+  fmt.Println("MyFunction() returns: ", text, num)
+
+  spy := gospy.SpyAndFakeWithReturn(&MyFunction, "Mock return value", 101)
+  text, num = MyFunction()
+
+  fmt.Println("** After Spy Creation **")
+  fmt.Println("MyFunction() returns: ", text, num)
+
+  spy.Restore()
+  text, num = MyFunction()
+
+  fmt.Println("** After Spy Restore **")
+  fmt.Println("MyFunction() returns: ", text, num)
+}
+```
+Running the above example produces:
+```
+** Before Spy Creation **
+MyFunction() returns:  Hello world 1
+** After Spy Creation **
+MyFunction() returns:  Mock return value 101
+** After Spy Restore **
+MyFunction() returns:  Hello world 1
+```
+
+### Using `SpyAndFakeWithFunc()`
+`SpyAndFakeWithFunc()` allows you to replace the behaviour of the target with a custom mock function (with the same signature).
+```go
+package main
+import (
+  "fmt"
+  "github.com/cfmobile/gospy"
+)
+
+func main() {
+  MyFunction := func() (string, int) {
+    return "Hello world", 1
+  }
+
+  text, num := MyFunction()
+
+  fmt.Println("** Before Spy Creation **")
+  fmt.Println("MyFunction() returns: ", text, num)
+
+  spy := gospy.SpyAndFakeWithFunc(&MyFunction, func()(string, int) {
+    return text + " fake", num + 1
+  })
+  text, num = MyFunction()
+
+  fmt.Println("** After Spy Creation **")
+  fmt.Println("MyFunction() returns: ", text, num)
+
+  spy.Restore()
+  text, num = MyFunction()
+
+  fmt.Println("** After Spy Restore **")
+  fmt.Println("MyFunction() returns: ", text, num)
+}
+```
+Running the above example should print:
+```
+** Before Spy Creation **
+MyFunction() returns:  Hello world 1
+** After Spy Creation **
+MyFunction() returns:  Hello world fake 2
+** After Spy Restore **
+MyFunction() returns:  Hello world 1
+```
+
 ##API
 
 ###Types
