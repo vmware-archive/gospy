@@ -14,6 +14,22 @@ Just use go get
   go get github.com/cfmobile/gospy
 ```
 
+##Usage
+
+- Import the header
+```go
+import (
+  //...
+  "github.com/cfmobile/gospy"
+)
+```
+
+1. Call one of the GoSpy constructors by passing **a pointer to a Func** that you'd like to monitor. If you also wish to modify the behaviour of the target while the spy monitors it, pick one of the constructors that allow you to pass in a fake return value or fake implementation. **Store the returned `*GoSpy` object**
+2. Run your code that makes calls to the target function.
+3. Use the `*GoSpy` object that you stored to inspect the calls that were made to the target. You can check whether it was called, the number of calls that it received, and the arguments (if any) that were used in each of the calls.
+4. If at any point you would like to start monitoring from scratch again, call `Reset()` in the `*GoSpy`. It just empties the object from the calls that have been recorded already, but doesn't change the fake behaviour (if any) that has been set.
+5. When you're done monitoring your target, call `Restore()` on the `*GoSpy` object. **This is very important, otherwise the behaviour of your target will remain modified for the lifetime of your application.**. After restoring, it's safe to let the `*GoSpy` object get garbage-collected.
+
 ##API
 
 ###Types
