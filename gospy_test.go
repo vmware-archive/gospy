@@ -1,18 +1,18 @@
 package gospy_test
 
 import (
+	"errors"
+	"fmt"
 	. "github.com/cfmobile/gospy"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"fmt"
-	"errors"
 )
 
 const (
 	kOriginalStringReturn = "original string value"
-	kOriginalIntReturn = 12345
-	kOriginalFloatReturn = float64(123.45)
-	kOriginalBoolReturn = true
+	kOriginalIntReturn    = 12345
+	kOriginalFloatReturn  = float64(123.45)
+	kOriginalBoolReturn   = true
 )
 
 var kOriginalErrorReturn = errors.New("some error")
@@ -24,7 +24,7 @@ var _ = Describe("GoSpy", func() {
 	var panicked bool
 
 	BeforeEach(func() {
-	    subject = nil
+		subject = nil
 		panicked = false
 		functionToSpy = func(string, int, bool) (string, int, float64, bool, error) {
 			return kOriginalStringReturn,
@@ -73,12 +73,12 @@ var _ = Describe("GoSpy", func() {
 			})
 		}
 
-	    Describe("Spy", func() {
+		Describe("Spy", func() {
 
-	        Context("when calling Spy() with a valid function pointer", func() {
+			Context("when calling Spy() with a valid function pointer", func() {
 				BeforeEach(func() {
 					defer panicRecover()
-				    subject = Spy(&functionToSpy)
+					subject = Spy(&functionToSpy)
 				})
 
 				constructorSuccessTests()
@@ -92,23 +92,23 @@ var _ = Describe("GoSpy", func() {
 					Expect(boolResult).To(Equal(kOriginalBoolReturn))
 					Expect(errorResult).To(Equal(kOriginalErrorReturn))
 				})
-	        })
+			})
 
 			Context("when calling Spy() with a function var", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = Spy(functionToSpy)
-			    })
+				})
 
 				constructorFailTests()
 			})
 
 			Context("when calling Spy() with any other unexpected type", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					someVar := "some random var"
 					subject = Spy(&someVar)
-			    })
+				})
 
 				constructorFailTests()
 			})
@@ -126,10 +126,10 @@ var _ = Describe("GoSpy", func() {
 		Describe("SpyAndFake", func() {
 
 			Context("when calling SpyAndFake() with a valid function pointer", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFake(&functionToSpy)
-			    })
+				})
 
 				constructorSuccessTests()
 
@@ -138,7 +138,7 @@ var _ = Describe("GoSpy", func() {
 
 			Context("when calling SpyAndFake() with a function object", func() {
 				BeforeEach(func() {
-				    defer panicRecover()
+					defer panicRecover()
 					subject = SpyAndFake(functionToSpy)
 				})
 
@@ -146,11 +146,11 @@ var _ = Describe("GoSpy", func() {
 			})
 
 			Context("when calling SpyAndFake() with any other unexpected type", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					someVar := "some random var"
 					subject = SpyAndFake(&someVar)
-			    })
+				})
 
 				constructorFailTests()
 			})
@@ -166,7 +166,7 @@ var _ = Describe("GoSpy", func() {
 				mockErrorValue := errors.New("mock error")
 
 				BeforeEach(func() {
-				    defer panicRecover()
+					defer panicRecover()
 					subject = SpyAndFakeWithReturn(&functionToSpy, mockStringValue, mockIntValue, mockFloatValue, mockBoolValue, mockErrorValue)
 				})
 
@@ -184,10 +184,10 @@ var _ = Describe("GoSpy", func() {
 			})
 
 			Context("when calling SpyAndFakeWithReturn() with no fake return values while the monitored function expects return values", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFakeWithReturn(&functionToSpy)
-			    })
+				})
 
 				constructorSuccessTests()
 
@@ -195,28 +195,28 @@ var _ = Describe("GoSpy", func() {
 			})
 
 			Context("when calling SpyAndFakeWithReturn() with an invalid first argument (not a function pointer)", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFakeWithReturn(functionToSpy, "mock", 1, 2.0, false, nil)
-			    })
+				})
 
 				constructorFailTests()
 			})
 
 			Context("when calling SpyAndFakeWithReturn() with an incorrect number of arguments (not matching the number of return values in the monitored function)", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFakeWithReturn(&functionToSpy, "mock", 1)
-			    })
+				})
 
 				constructorFailTests()
 			})
 
 			Context("when calling SpyAndFakeWithReturn() with an incorrect variable type for any of the mock return values", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFakeWithReturn(&functionToSpy, 0, 1, 2.0, false, nil)
-			    })
+				})
 
 				constructorFailTests()
 			})
@@ -241,7 +241,7 @@ var _ = Describe("GoSpy", func() {
 				}
 
 				BeforeEach(func() {
-				    defer panicRecover()
+					defer panicRecover()
 					subject = SpyAndFakeWithFunc(&functionToSpy, mockFunction)
 				})
 
@@ -264,43 +264,43 @@ var _ = Describe("GoSpy", func() {
 					Expect(boolResult).To(BeFalse())
 					Expect(errorResult).To(Equal(mockErrorValue))
 				})
-		    })
+			})
 
 			Context("when calling SpyAndFakeWithFunc() with a functionPtr as the mock function", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					mockFunc := func(s string, i int, b bool) (string, int, float64, bool, error) {
 						return "", 0, 0.0, false, nil
 					}
 					subject = SpyAndFakeWithFunc(&functionToSpy, &mockFunc)
-			    })
+				})
 
 				constructorFailTests()
 			})
 
 			Context("when calling SpyAndFakeWithFunc() with a mock function that doesn't have a matching signature with the target's", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFakeWithFunc(&functionToSpy, func() {})
-			    })
+				})
 
 				constructorFailTests()
 			})
 
 			Context("when calling SpyAndFakeWithFunc() with a non-functionPtr target", func() {
-			    BeforeEach(func() {
-			        defer panicRecover()
+				BeforeEach(func() {
+					defer panicRecover()
 					subject = SpyAndFakeWithFunc(functionToSpy, func(s string, i int, b bool) (string, int, float64, bool, error) {
 						return "", 0, 0.0, false, nil
 					})
-			    })
+				})
 
 				constructorFailTests()
 			})
 
 			Context("when calling SpyAndFakeWithFunc() with an incompatible type as the mock function", func() {
 				BeforeEach(func() {
-				    defer panicRecover()
+					defer panicRecover()
 					someVar := "some random var"
 					subject = SpyAndFakeWithFunc(&functionToSpy, someVar)
 				})
@@ -310,9 +310,9 @@ var _ = Describe("GoSpy", func() {
 
 			Context("when calling SpyAndFakeWithFunc() with a nil mock function", func() {
 				BeforeEach(func() {
-			        defer panicRecover()
+					defer panicRecover()
 					subject = SpyAndFakeWithFunc(&functionToSpy, nil)
-			    })
+				})
 
 				constructorFailTests()
 			})
@@ -391,10 +391,9 @@ var _ = Describe("GoSpy", func() {
 			}
 
 			It(fmt.Sprintf("should contain %s list of Calls()", msg), func() {
-			    Expect(subject.Calls()).To(Equal(expectedCallList))
+				Expect(subject.Calls()).To(Equal(expectedCallList))
 			})
 		}
-
 
 		BeforeEach(func() {
 			subject = Spy(&functionToSpy)
@@ -402,7 +401,7 @@ var _ = Describe("GoSpy", func() {
 
 		Context("as soon as it's created", func() {
 			expectedCalledState := false
-		    expectedCallCount := 0
+			expectedCallCount := 0
 			expectedCallList := CallList(nil)
 
 			goSpyCalledTest(expectedCalledState)
@@ -434,7 +433,7 @@ var _ = Describe("GoSpy", func() {
 			expectedCallList := CallList{expectedArgList}
 
 			BeforeEach(func() {
-			    functionToSpy("test value", 101, true)
+				functionToSpy("test value", 101, true)
 			})
 
 			goSpyCalledTest(expectedCalledState)
@@ -448,7 +447,7 @@ var _ = Describe("GoSpy", func() {
 			goSpyRestoreTests(expectedCallCount, expectedCallList)
 
 			It("ArgsForCall() should return the arguments that were used in the call", func() {
-			    Expect(subject.ArgsForCall(0)).To(Equal(expectedArgList))
+				Expect(subject.ArgsForCall(0)).To(Equal(expectedArgList))
 			})
 		})
 
@@ -462,7 +461,7 @@ var _ = Describe("GoSpy", func() {
 			}
 
 			BeforeEach(func() {
-			    functionToSpy("call 1", 1, true)
+				functionToSpy("call 1", 1, true)
 				functionToSpy("call 2", 2, false)
 				functionToSpy("call 3", 3, true)
 			})
@@ -478,9 +477,9 @@ var _ = Describe("GoSpy", func() {
 			goSpyRestoreTests(expectedCallCount, expectedCallList)
 
 			It("ArgsForCall(n) should return the arguments for the n-th call (0-based index) ", func() {
-			    Expect(subject.ArgsForCall(0)).To(Equal(expectedCallList[0]))
-			    Expect(subject.ArgsForCall(1)).To(Equal(expectedCallList[1]))
-			    Expect(subject.ArgsForCall(2)).To(Equal(expectedCallList[2]))
+				Expect(subject.ArgsForCall(0)).To(Equal(expectedCallList[0]))
+				Expect(subject.ArgsForCall(1)).To(Equal(expectedCallList[1]))
+				Expect(subject.ArgsForCall(2)).To(Equal(expectedCallList[2]))
 			})
 		})
 
@@ -497,13 +496,13 @@ var _ = Describe("GoSpy", func() {
 				{"C", []interface{}{1, 2, 3}},
 			}
 
-		    BeforeEach(func() {
-		        subject = Spy(&variadicFunction)
+			BeforeEach(func() {
+				subject = Spy(&variadicFunction)
 
 				variadicFunction("A", 1)
 				variadicFunction("B", 1, 2)
 				variadicFunction("C", 1, 2, 3)
-		    })
+			})
 
 			goSpyCalledTest(expectedCalledState)
 

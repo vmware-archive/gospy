@@ -1,10 +1,10 @@
 package gospy
 
 import (
-	"reflect"
-	"github.com/cfmobile/gmock"
-	"fmt"
 	"errors"
+	"fmt"
+	"github.com/cfmobile/gmock"
+	"reflect"
 )
 
 type ArgList []interface{}
@@ -90,11 +90,11 @@ func (self *GoSpy) storeCall(arguments []reflect.Value) {
 	self.calls = append(self.calls, call)
 }
 
-func (self *GoSpy) getDefaultFn() (func(args []reflect.Value) []reflect.Value) {
+func (self *GoSpy) getDefaultFn() func(args []reflect.Value) []reflect.Value {
 	return self.mock.GetOriginal().Call
 }
 
-func (self *GoSpy) getFnWithReturnValues(fakeReturnValues []interface{}) (func(args []reflect.Value) []reflect.Value) {
+func (self *GoSpy) getFnWithReturnValues(fakeReturnValues []interface{}) func(args []reflect.Value) []reflect.Value {
 	targetType := self.mock.GetTarget().Type()
 
 	// Gets the expected number of return values from the target
@@ -125,7 +125,7 @@ func (self *GoSpy) getFnWithReturnValues(fakeReturnValues []interface{}) (func(a
 	}
 }
 
-func (self *GoSpy) getFnWithMockFunc(mockFunc interface{}) (func(args []reflect.Value) []reflect.Value) {
+func (self *GoSpy) getFnWithMockFunc(mockFunc interface{}) func(args []reflect.Value) []reflect.Value {
 	return reflect.ValueOf(mockFunc).Call
 }
 

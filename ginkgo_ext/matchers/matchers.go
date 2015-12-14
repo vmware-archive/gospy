@@ -1,10 +1,10 @@
 package matchers
 
 import (
+	"github.com/cfmobile/gospy"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/matchers"
 	"github.com/onsi/gomega/types"
-	"github.com/cfmobile/gospy"
 )
 
 func BeFunction(expected interface{}) OmegaMatcher {

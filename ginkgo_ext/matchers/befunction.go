@@ -1,8 +1,8 @@
 package matchers
 
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 )
 
 func fptr(f interface{}) uintptr {
@@ -25,6 +25,3 @@ func (matcher *_BeFunctionMatcher) FailureMessage(actual interface{}) (message s
 func (matcher *_BeFunctionMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return fmt.Sprintf("Expected\n\t%#v\nnot to be function\n\t%#v", actual, matcher.expected)
 }
-
-
-
