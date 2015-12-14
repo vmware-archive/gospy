@@ -8,6 +8,31 @@ Dependencies: [gmock](http://github.com/cfmobile/gmock)
 
 Compatibility verified with Go 1.4 and up.
 
+1. [Installation](#installation)
+2. [Usage](#usage)
+3. [Examples](#examples)
+  1. [Using Spy()](#using-basic-constructor-spy)
+  2. [Using SpyAndFake()](#using-spyandfake)
+  3. [Using SpyAndFakeWithReturn()](#using-spyandfakewithreturn)
+  4. [Using SpyAndFakeWithFunc()](#using-spyandfakewithfunc)
+4. [API](#api)
+  1. [Types](#types)
+    1. [GoSpy](#gospy)
+    2. [ArgList](#arglist)
+    3. [CallList](#calllist)
+  2. [Constructors](#constructors)
+    1. [Spy()](#spy)
+    2. [SpyAndFake()](#spyandfake)
+    3. [SpyAndFakeWithReturn()](#spyandfakewithreturn)
+    4. [SpyAndFakeWithFunc()](#spyandfakewithfunc)
+  3. [GoSpy Methods](#gospy-methods)
+    1. [GoSpy.Called()](#gospycalled)
+    2. [GoSpy.CallCount()](#gospycallcount)
+    3. [GoSpy.Calls()](#gospycalls)
+    4. [GoSpy.ArgsForCall()](#gospyargsforcall)
+    5. [GoSpy.Reset()](#gospyreset)
+    6. [GoSpy.Restore()](#gospyrestore)
+
 ##Installation
 
 Just use go get
