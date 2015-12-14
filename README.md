@@ -96,3 +96,65 @@ Constructor of a `GoSpy` object that modifies the target's behaviour to be repla
 **Note 1:** Passing nil or a mock function with a different signature will cause this constructor to panic.
 
 **Returns:** a pointer to a new `GoSpy` object. After the constructor returns, the target function have it's behaviour modified and will be monitored for calls until `spy.Restore()` is called.
+
+###GoSpy Methods
+
+#####GoSpy.Called()
+```go
+func (self *GoSpy) Called() bool
+```
+
+**Returns:** `bool` indicating whether the target has been called since the spy was constructed, or since the last call to `Reset()`.
+
+#####GoSpy.CallCount()
+```go
+func (self *GoSpy) CallCount() int
+```
+
+**Returns:** `int` containing number of calls to the target recorded since the spy was constructed, or since the last call to `Reset()`
+
+#####GoSpy.Calls()
+```go
+func (self *GoSpy) Calls() CallList
+```
+
+**Returns:** `CallList` containing all the calls that were made to the target recorded since the spy was constructed, or since the last call to `Reset()`. Returns `nil` if no calls have been recorded.
+
+The `CallList` returned will contain all the arguments to all of the calls, preserving the order that they were made.
+
+**Note:** Variadic functions (i.e. `func(args ...interface{})`) will store the variadic arguments as a single argument of type **`[]interface{}`**. When no arguments are passed in it records the equivalent to `[]interface{}{nil}`.
+
+#####GoSpy.ArgsForCall()
+```go
+func (self *GoSpy) ArgsForCall(callIndex uint) ArgList
+```
+
+Retrieves the `ArgList` for a single call specified by `callIndex`.
+
+**`callIndex`** is a zero-based index of the call you would like to inspect. If the `callIndex` is invalid (out of bounds), the function will panic.
+
+**Returns:** `ArgList` containing the arguments for the selected call.
+
+**Note:** This function effectively returns one specific entry that would be available in `Calls()`.
+
+#####GoSpy.Reset()
+```go
+func (self *GoSpy) Reset()
+```
+
+Deletes the internal records of the `GoSpy` object. Immediate subsequent calls to: `Called()` would return `false`; `CallCount()` would return `0`;  `Calls()` would return `nil`; and `ArgsForCall()` with any index would panic.
+
+Any subsequent calls to the target would be recorded normally.
+
+**Note:** `Reset()` doesn't affect the monitoring of subsequent calls nor the modified behaviour of the target function. Use `Restore()` for that purpose.
+
+#####GoSpy.Restore()
+```go
+func (self *GoSpy) Restore()
+```
+
+Restores the target function back to normal. The `GoSpy` will no longer record any subsequent calls and any modified behaviour in the function would be reverted back.
+
+**Note:** Doesn't clear the `GoSpy` object from the calls that have been recorded up to that point.
+
+**IMPORTANT: Always, always, ALWAYS Restore your function once you're done monitoring it, otherwise the changes to your target are permanent for the lifetime of your application.**
